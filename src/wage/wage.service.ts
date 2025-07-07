@@ -59,7 +59,7 @@ Always return JSON.
   }
   async predictWage(input: StructuredInputDTO): Promise<number> {
     try {
-      const response = await axios.post('http://localhost:8000/predict', input);
+      const response = await axios.post('https://plumber-api-2-latest.onrender.com/predict', input);
       return response.data.predictedWage;
     } catch (error) {
       console.error('Prediction error:', error?.response?.data || error.message);
