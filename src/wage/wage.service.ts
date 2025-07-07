@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { StructuredInputDTO } from './dto/structured-input.dto'; // Adjust path if needed
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import axios from 'axios';
+import { StructuredInputDTO } from './dto/structured-input.dto';
 
 
 
@@ -57,13 +57,32 @@ Always return JSON.
       return { error: 'Invalid response from model' };
     }
   }
+
   async predictWage(input: StructuredInputDTO): Promise<number> {
     try {
-      const response = await axios.post('https://plumber-api-2-latest.onrender.com/predict', input);
+      const response = await axios.post(
+        'https://plumber-api-2-latest.onrender.com/predict',
+        input,
+        { timeout: 20000 }, // Optional timeout for robustness
+      );
       return response.data.predictedWage;
-    } catch (error) {
-      console.error('Prediction error:', error?.response?.data || error.message);
-      throw new Error('Prediction failed');
+    } catch (error: any) {
+      const status = error.response?.status || 503;
+      const message = error.response?.data?.message || 'Wage prediction service unavailable';
+
+      console.error('Prediction error:', {
+        status,
+        message,
+        data: error.response?.data,
+      });
+
+      throw new HttpException(
+        {
+          statusCode: status,
+          message: message,
+        },
+        status,
+      );
     }
   }
 }
