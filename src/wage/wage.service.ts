@@ -2,6 +2,17 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import axios from 'axios';
 import { StructuredInputDTO } from './dto/structured-input.dto';
 
+type ExtractedProfile = {
+  age?: string | null;
+  years_experience?: string | null;
+  experienceYears?: string | null;
+  education?: string | null;
+  gender?: string | null;
+  country?: string | null;
+  industry?: string | null;
+  missingFields?: string[];
+  nextQuestion?: string | null;
+};
 
 
 @Injectable()
@@ -51,7 +62,7 @@ Always return JSON.
 
     const raw = response.data.choices[0].message.content;
     try {
-      return JSON.parse(raw ?? '{}');
+      return this.normalizeExtractedProfile(raw);
     } catch (err) {
       console.error('Parse error:', raw);
       return { error: 'Invalid response from model' };
@@ -84,6 +95,26 @@ Always return JSON.
         status,
       );
     }
+  }
+
+  private normalizeExtractedProfile(raw: string | null | undefined): ExtractedProfile {
+    const cleaned = (raw ?? '')
+      .trim()
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '');
+
+    const parsed = JSON.parse(cleaned || '{}') as ExtractedProfile;
+
+    if (parsed.years_experience && !parsed.experienceYears) {
+      parsed.experienceYears = parsed.years_experience;
+    }
+
+    if (parsed.experienceYears && !parsed.years_experience) {
+      parsed.years_experience = parsed.experienceYears;
+    }
+
+    return parsed;
   }
 }
 

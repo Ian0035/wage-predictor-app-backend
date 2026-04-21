@@ -39,6 +39,7 @@ Example response shape:
 {
   "age": "25-29",
   "years_experience": "4-5",
+  "experienceYears": "4-5",
   "education": "Bachelor's degree",
   "gender": "Male",
   "country": "Belgium",
@@ -167,7 +168,7 @@ test/
 ## Important Notes
 
 - `main.ts` loads environment variables with `dotenv`, enables CORS, and starts the app on port `3001`.
-- The analyze endpoint returns `years_experience`, while the predict endpoint expects `experienceYears`. If another client consumes both endpoints, it needs to map that field name before calling `/wage/predict`.
+- The analyze endpoint now returns both `years_experience` and `experienceYears` so clients can use the extracted payload directly for prediction without renaming that field.
 - Validation decorators exist on `StructuredInputDTO`, but global Nest validation is not currently enabled in `main.ts`.
 - The backend does not perform model training locally. It acts as an orchestration layer between the frontend, Groq, and the external prediction service.
 
